@@ -41,12 +41,16 @@ public class MessageController {
     }
 
     public String getMessageFallBack(@RequestParam Map<String, String> param) {
+        System.out.println("Inside Fallback");
+
         String message = param.get("message");
 
         return "fallback message : " + message;
     }
 
     public String postMessageFallBack(@RequestBody String message) {
+        System.out.println("Inside Fallback");
+
         return "fallback message : " + message;
     }
 }
