@@ -1,18 +1,12 @@
 package com.company.controller;
 
-import com.company.service.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 public class MessageController {
-
-    @Autowired
-    private MessageService messageService;
 
     @GetMapping("/hello")
     public String helloPage() {
@@ -25,7 +19,34 @@ public class MessageController {
     }
 
     @GetMapping("/test")
-    public String testPage() {
-        return messageService.getMessage();
+    @HystrixCommand(fallbackMethod = "getMessageFallBack")
+    public String testPage(@RequestParam Map<String, String> param) {
+
+        String message = param.get("message");
+
+        if(message.equalsIgnoreCase("error"))
+            throw new RuntimeException();
+
+        return message;
+    }
+
+    @PostMapping("/test")
+    @HystrixCommand(fallbackMethod = "postMessageFallBack")
+    public String hystrixPage(@RequestBody String message) {
+
+        if(message.equalsIgnoreCase("error"))
+            throw new RuntimeException();
+
+        return message;
+    }
+
+    public String getMessageFallBack(@RequestParam Map<String, String> param) {
+        String message = param.get("message");
+
+        return "fallback message : " + message;
+    }
+
+    public String postMessageFallBack(@RequestBody String message) {
+        return "fallback message : " + message;
     }
 }
